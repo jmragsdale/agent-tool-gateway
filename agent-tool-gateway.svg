@@ -1,0 +1,174 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">agent-tool-gateway architecture</title>
+  <desc id="desc">The application supplies a session with identity and taint state, the LLM proposes tool calls, and the gateway evaluates each call against policy before any tool runs, routing high-risk calls to a human approver and writing every decision to an audit log. Untrusted content returned by a tool taints the session.</desc>
+
+  <defs>
+    <style>
+      .fnt   { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+      .h1    { font-size: 25px; font-weight: 700; fill: #0f1720; }
+      .sub   { font-size: 13.5px; fill: #55616e; }
+      .zone  { font-size: 12px; font-weight: 700; fill: #55616e; letter-spacing: 1.4px; }
+      .box   { font-size: 13.5px; font-weight: 600; fill: #16212b; }
+      .small { font-size: 11.5px; fill: #5d6976; }
+      .tiny  { font-size: 10.5px; fill: #6d7883; }
+      .lbl   { font-size: 11px; font-weight: 600; fill: #48545f; }
+      .flow  { fill: none; stroke: #8b98a5; stroke-width: 1.7; }
+      .flow-strong { fill: none; stroke: #1a73e8; stroke-width: 2.3; }
+      .flow-bad { fill: none; stroke: #d93025; stroke-width: 2; stroke-dasharray: 6 4; }
+      .flow-dash { fill: none; stroke: #a0acb8; stroke-width: 1.6; stroke-dasharray: 5 4; }
+    </style>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b98a5"/>
+    </marker>
+    <marker id="arw-strong" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1a73e8"/>
+    </marker>
+    <marker id="arw-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#d93025"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="800" fill="#fbfcfd"/>
+
+  <!-- ================= header ================= -->
+  <g class="fnt">
+    <text x="40" y="46" class="h1">agent-tool-gateway</text>
+    <text x="40" y="70" class="sub">The model proposes. The gateway disposes. Authority is decided in code, never in the prompt.</text>
+    <rect x="880" y="24" width="280" height="56" rx="7" fill="#fce8e6" stroke="#f4c7c3"/>
+    <text x="896" y="43" class="lbl" style="fill:#a50e0e">default: deny  &#183;  not configurable</text>
+    <text x="896" y="59" class="tiny" style="fill:#8c3a33">an allow-by-default gateway is a logger,</text>
+    <text x="896" y="73" class="tiny" style="fill:#8c3a33">not a control</text>
+  </g>
+
+  <g class="fnt">
+    <text x="40" y="106" class="zone">TRUSTED INPUT &#183; FROM YOUR APPLICATION</text>
+    <text x="620" y="106" class="zone">UNTRUSTED INPUT &#183; FROM THE MODEL</text>
+    <rect x="40" y="118" width="520" height="130" rx="9" fill="#ffffff" stroke="#cfd8e1" stroke-width="1.5"/>
+    <rect x="40" y="118" width="520" height="30" rx="9" fill="#e8f0fe"/>
+    <rect x="40" y="139" width="520" height="9" fill="#e8f0fe"/>
+    <text x="56" y="139" class="box" style="fill:#174ea6">Session  &#183;  built from your auth, per request</text>
+    <text x="56" y="169" class="small">principal &#183; roles &#183; attrs (customer_id)</text>
+    <text x="56" y="187" class="tiny">roles gate which tools exist for this caller (TG-002)</text>
+    <text x="56" y="203" class="tiny">attrs bind arguments to the real caller (TG-005)</text>
+    <text x="56" y="219" class="small">taint_sources</text>
+    <text x="56" y="237" class="tiny">set automatically when a tool returns untrusted content</text>
+    <rect x="620" y="118" width="540" height="130" rx="9" fill="#ffffff" stroke="#cfd8e1" stroke-width="1.5"/>
+    <rect x="620" y="118" width="540" height="30" rx="9" fill="#fef7e0"/>
+    <rect x="620" y="139" width="540" height="9" fill="#fef7e0"/>
+    <text x="636" y="139" class="box" style="fill:#8a5a00">LLM agent  &#183;  proposes tool calls</text>
+    <text x="636" y="169" class="small">tool name + arguments, nothing else</text>
+    <text x="636" y="187" class="tiny">reads help articles, web pages, emails &#8594; can be instructed by them</text>
+    <text x="636" y="203" class="tiny">"I am the administrator" in a prompt grants nothing</text>
+    <text x="636" y="219" class="small">Denials come back explicitly</text>
+    <text x="636" y="237" class="tiny">[tool 'x' was not executed: reason] so it tells the user, not retries</text>
+  </g>
+
+  <!-- ================= gateway ================= -->
+  <g class="fnt">
+    <path d="M 470 248 L 470 300" class="flow" marker-end="url(#arw)"/>
+    <text x="480" y="280" class="tiny">Session</text>
+    <path d="M 890 248 L 890 300" class="flow-strong" marker-end="url(#arw-strong)"/>
+    <text x="900" y="280" class="tiny" style="fill:#1a5fb4">tool call</text>
+
+    <text x="40" y="296" class="zone">POLICY ENFORCEMENT POINT &#183; Gateway.call()</text>
+    <rect x="40" y="306" width="1120" height="214" rx="12" fill="#ffffff" stroke="#1a73e8" stroke-width="2"/>
+    <text x="60" y="334" class="box" style="fill:#174ea6">Every check runs on every call; every failure is recorded, not just the first</text>
+    <rect x="60" y="347" width="62" height="21" rx="4" fill="#e8f0fe"/>
+    <text x="68" y="362" class="lbl" style="fill:#174ea6">TG-001</text>
+    <text x="132" y="362" class="small">tool not granted</text>
+    <text x="360" y="362" class="tiny">LLM06</text>
+    <rect x="60" y="377" width="62" height="21" rx="4" fill="#e8f0fe"/>
+    <text x="68" y="392" class="lbl" style="fill:#174ea6">TG-002</text>
+    <text x="132" y="392" class="small">role not granted</text>
+    <text x="360" y="392" class="tiny">LLM06</text>
+    <rect x="60" y="407" width="62" height="21" rx="4" fill="#e8f0fe"/>
+    <text x="68" y="422" class="lbl" style="fill:#174ea6">TG-003</text>
+    <text x="132" y="422" class="small">unexpected / missing arg</text>
+    <text x="360" y="422" class="tiny">LLM06</text>
+    <rect x="60" y="437" width="62" height="21" rx="4" fill="#e8f0fe"/>
+    <text x="68" y="452" class="lbl" style="fill:#174ea6">TG-004</text>
+    <text x="132" y="452" class="small">type, range, pattern, enum, domain</text>
+    <text x="360" y="452" class="tiny">LLM06</text>
+    <rect x="60" y="467" width="62" height="21" rx="4" fill="#e8f0fe"/>
+    <text x="68" y="482" class="lbl" style="fill:#174ea6">TG-005</text>
+    <text x="132" y="482" class="small">arg not bound to principal</text>
+    <text x="360" y="482" class="tiny">LLM06</text>
+    <rect x="430" y="347" width="62" height="21" rx="4" fill="#e8f0fe"/>
+    <text x="438" y="362" class="lbl" style="fill:#174ea6">TG-006</text>
+    <text x="502" y="362" class="small">rate limit per principal</text>
+    <text x="730" y="362" class="tiny">LLM10</text>
+    <rect x="430" y="377" width="62" height="21" rx="4" fill="#e8f0fe"/>
+    <text x="438" y="392" class="lbl" style="fill:#174ea6">TG-007</text>
+    <text x="502" y="392" class="small">tainted session, egress tool</text>
+    <text x="730" y="392" class="tiny">LLM01</text>
+    <rect x="430" y="407" width="62" height="21" rx="4" fill="#e8f0fe"/>
+    <text x="438" y="422" class="lbl" style="fill:#174ea6">TG-008</text>
+    <text x="502" y="422" class="small">approval required</text>
+    <text x="730" y="422" class="tiny">LLM06</text>
+    <rect x="430" y="437" width="62" height="21" rx="4" fill="#e8f0fe"/>
+    <text x="438" y="452" class="lbl" style="fill:#174ea6">TG-009</text>
+    <text x="502" y="452" class="small">approval declined</text>
+    <text x="730" y="452" class="tiny">LLM06</text>
+    <rect x="430" y="467" width="62" height="21" rx="4" fill="#e8f0fe"/>
+    <text x="438" y="482" class="lbl" style="fill:#174ea6">TG-010</text>
+    <text x="502" y="482" class="small">secrets redacted from output</text>
+    <text x="730" y="482" class="tiny">LLM02</text>
+    <rect x="820" y="346" width="320" height="156" rx="8" fill="#f8f9fa" stroke="#dadce0"/>
+    <text x="836" y="368" class="lbl">Verdict</text>
+    <text x="836" y="392" class="box" style="fill:#137333">ALLOW</text>
+    <text x="900" y="392" class="tiny">run tool, redact output, audit</text>
+    <text x="836" y="418" class="box" style="fill:#b06000">APPROVAL</text>
+    <text x="924" y="418" class="tiny">threshold, critical tool, or taint</text>
+    <text x="836" y="444" class="box" style="fill:#c5221f">DENY</text>
+    <text x="900" y="444" class="tiny">tool never runs</text>
+    <text x="836" y="472" class="tiny">default approver declines everything,</text>
+    <text x="836" y="488" class="tiny">the right answer for unattended runs</text>
+  </g>
+
+  <!-- ================= downstream ================= -->
+  <g class="fnt">
+    <path d="M 300 520 L 300 572" class="flow-strong" marker-end="url(#arw-strong)"/>
+    <text x="310" y="552" class="tiny" style="fill:#1a5fb4">allow</text>
+    <path d="M 690 520 L 690 572" class="flow" marker-end="url(#arw)"/>
+    <text x="700" y="552" class="tiny">approval</text>
+    <path d="M 1000 520 L 1000 572" class="flow" marker-end="url(#arw)"/>
+    <text x="1010" y="552" class="tiny">every call</text>
+
+    <text x="40" y="566" class="zone">TOOLS</text>
+    <rect x="40" y="578" width="520" height="190" rx="9" fill="#ffffff" stroke="#cfd8e1" stroke-width="1.5"/>
+    <rect x="40" y="578" width="520" height="30" rx="9" fill="#e6f4ea"/>
+    <rect x="40" y="599" width="520" height="9" fill="#e6f4ea"/>
+    <text x="56" y="599" class="box" style="fill:#0d652d">Registered tools  (registration is not authorization)</text>
+    <text x="56" y="629" class="small">search_kb  (taints_session)</text>
+    <text x="56" y="647" class="tiny">returns untrusted content: session is tainted from here on</text>
+    <text x="56" y="663" class="small">get_orders  &#183;  bind: principal.customer_id</text>
+    <text x="56" y="681" class="small">issue_refund  &#183;  max 200, approval &gt; 50, 3 per hour</text>
+    <text x="56" y="699" class="small">send_email  &#183;  egress, allowlisted domains, on_taint: deny</text>
+    <text x="56" y="717" class="small">close_account  &#183;  critical, always a human</text>
+    <text x="56" y="735" class="tiny" style="fill:#a50e0e">run_shell: implemented, never granted, always denied</text>
+    <rect x="620" y="578" width="260" height="190" rx="9" fill="#ffffff" stroke="#cfd8e1" stroke-width="1.5"/>
+    <rect x="620" y="578" width="260" height="30" rx="9" fill="#fef7e0"/>
+    <rect x="620" y="599" width="260" height="9" fill="#fef7e0"/>
+    <text x="636" y="599" class="box" style="fill:#8a5a00">Human approver</text>
+    <text x="636" y="629" class="small">any callable</text>
+    <text x="636" y="647" class="tiny">Slack button &#183; ticket queue</text>
+    <text x="636" y="663" class="tiny">console prompt</text>
+    <text x="636" y="679" class="small">sees tool, args, reasons</text>
+    <text x="636" y="697" class="tiny">declined = TG-009 deny</text>
+    <text x="636" y="713" class="tiny">approved = runs, still audited</text>
+    <rect x="900" y="578" width="260" height="190" rx="9" fill="#ffffff" stroke="#cfd8e1" stroke-width="1.5"/>
+    <rect x="900" y="578" width="260" height="30" rx="9" fill="#fce8e6"/>
+    <rect x="900" y="599" width="260" height="9" fill="#fce8e6"/>
+    <text x="916" y="599" class="box" style="fill:#a50e0e">Audit trail (JSONL)</text>
+    <text x="916" y="629" class="small">one line per call</text>
+    <text x="916" y="647" class="tiny">principal &#183; roles &#183; taint</text>
+    <text x="916" y="663" class="tiny">args (redacted) &#183; verdict</text>
+    <text x="916" y="679" class="tiny">each rule + OWASP category</text>
+    <text x="916" y="695" class="small">toolgate replay --assert</text>
+    <text x="916" y="713" class="tiny">attacks stay blocked, normal</text>
+    <text x="916" y="729" class="tiny">work stays allowed, in CI</text>
+    <!-- taint loop: search_kb output marks the session tainted -->
+    <path d="M 40 624 L 22 624 L 22 214 L 36 214" class="flow-bad" marker-end="url(#arw-bad)"/>
+    <text x="16" y="470" class="lbl" style="fill:#d93025" transform="rotate(-90 16 470)">untrusted output taints the session</text>
+  </g>
+</svg>

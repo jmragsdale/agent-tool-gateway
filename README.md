@@ -2,6 +2,8 @@
 
 Put a policy enforcement point between an AI agent and its tools, so what the agent is *allowed* to do is decided in code — default-deny, bound to the real caller, aware of untrusted content — instead of in a system prompt the model may or may not obey.
 
+![Architecture](agent-tool-gateway.svg)
+
 [prompt-injection-probe](https://github.com/jmragsdale/prompt-injection-probe) finds out whether your guardrails hold. Its LLM06 remediation reads, over and over, *enforce this in the tool layer*. This is the tool layer.
 
 ```bash
