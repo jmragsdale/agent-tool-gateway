@@ -1,0 +1,15 @@
+# Extends gitleaks default rules; allowlists known-safe demo/example values.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Intentional demo/example values in this portfolio"
+regexes = [
+  '''AKIAIOSFODNN7EXAMPLE''',
+  '''sk-demo-[A-Za-z0-9]+''',
+]
+paths = [
+  '''.*examples/traces/.*\.jsonl$''',
+  '''.*tests/.*\.py$''',
+  '''.*src/toolgate/demo\.py$''',
+]

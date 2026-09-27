@@ -1,0 +1,54 @@
+name: selftest
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  gateway:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+
+      # The shipped policy loads, is default-deny, and has no lint warnings
+      - run: toolgate check policies/support-agent.yaml --strict
+
+      # Unit tests: every rule blocks what it should and nothing it should not
+      - run: pytest -q
+
+      # Policy regression, both directions. Attacks must stay blocked AND normal
+      # work must stay allowed; a gate that only proves one of those is
+      # trivially satisfied by denying (or allowing) everything.
+      - name: attack trace stays blocked
+        run: toolgate replay examples/traces/attacks.jsonl --assert
+      - name: normal trace stays allowed
+        run: toolgate replay examples/traces/normal.jsonl --assert
+
+      # The ungated run must execute the exfiltration; the harness is broken if it doesn't
+      - name: demo contrast
+        run: |
+          toolgate demo --no-gateway --json open.json
+          toolgate demo --json gated.json
+          python -c "import json,sys; o=json.load(open('open.json'))['summary']; g=json.load(open('gated.json'))['summary']; sys.exit(0 if o['executed']==13 and g['deny']>=7 else 1)"
+
+  secrets:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Binary, not gitleaks-action: the action fails on an initial push and
+      # ignores .gitleaks.toml unless GITLEAKS_CONFIG is set.
+      - name: gitleaks
+        run: |
+          set -euo pipefail
+          VERSION=8.24.3
+          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}/gitleaks_${VERSION}_linux_x64.tar.gz" \
+            | tar xz gitleaks
+          ./gitleaks dir . --config .gitleaks.toml --redact --no-banner
+          ./gitleaks git . --config .gitleaks.toml --redact --no-banner

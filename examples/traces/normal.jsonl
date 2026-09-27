@@ -1,0 +1,6 @@
+# Calls the policy MUST allow. CI fails if a policy change starts blocking ordinary work.
+{"principal": "cust:1042", "roles": ["customer"], "attrs": {"customer_id": "CUST-1042"}, "tool": "get_orders", "args": {"customer_id": "CUST-1042"}, "expect": "allow", "note": "customer reads own orders"}
+{"principal": "agent:n1", "roles": ["support_agent"], "attrs": {"customer_id": "CUST-1042"}, "tool": "get_orders", "args": {"customer_id": "CUST-1042"}, "expect": "allow", "note": "agent reads ticket owner's orders"}
+{"principal": "agent:n1", "roles": ["support_agent"], "attrs": {"customer_id": "CUST-1042"}, "tool": "issue_refund", "args": {"order_id": "ORD-104211", "amount": 49.99, "reason": "damaged"}, "expect": "allow", "note": "just under the approval threshold"}
+{"principal": "agent:n1", "roles": ["support_agent"], "attrs": {"customer_id": "CUST-1042"}, "tool": "send_email", "args": {"to": "jo@customers.acme.example", "subject": "Refund processed", "body": "Done."}, "expect": "allow", "note": "untainted email to customer domain"}
+{"principal": "agent:n1", "roles": ["support_agent"], "attrs": {"customer_id": "CUST-1042"}, "tool": "search_kb", "args": {"query": "shipping times"}, "expect": "allow", "note": "reading the help center"}

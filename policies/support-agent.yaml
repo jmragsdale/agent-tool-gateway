@@ -1,0 +1,65 @@
+# Policy for a customer-support agent with five tools.
+#
+# Read it as: what is the worst thing each tool could do if the model were fully
+# compromised by an injected instruction? The answer should be "something small,
+# for this customer only, and a human sees anything bigger".
+
+version: 1
+name: acme-support-agent
+default: deny            # not configurable: an allow-by-default gateway is a logger
+
+# Added to the built-in credential patterns (AWS keys, sk- keys, GitHub PATs,
+# private key headers, card-shaped numbers).
+redact_patterns:
+  - 'ACME-INTERNAL-[A-Z0-9]{8}'
+
+tools:
+  search_kb:
+    risk: low
+    description: Search help-center articles. Content is partly user-contributed.
+    allow_roles: [customer, support_agent]
+    taints_session: true           # retrieved text can carry injected instructions
+    args:
+      query: { type: string, max_length: 200 }
+
+  get_orders:
+    risk: medium
+    description: List orders for one customer.
+    allow_roles: [customer, support_agent]
+    args:
+      customer_id:
+        type: string
+        pattern: '^CUST-[0-9]{4}$'
+        bind: principal.customer_id   # the model cannot ask for someone else's orders
+
+  issue_refund:
+    risk: high
+    description: Refund an order to the original payment method.
+    allow_roles: [support_agent]
+    on_taint: approval               # after reading untrusted content, a human signs off
+    rate_limit: { calls: 3, per_seconds: 3600 }
+    approval_threshold: { amount: 50 }
+    args:
+      order_id: { type: string, pattern: '^ORD-[0-9]{6}$' }
+      amount:   { type: number, min: 0.01, max: 200 }
+      reason:   { type: string, enum: [damaged, late, wrong_item, goodwill] }
+
+  send_email:
+    risk: high
+    description: Email a customer. This is egress; data leaves the trust boundary.
+    allow_roles: [support_agent]
+    egress: true
+    on_taint: deny                   # the classic exfiltration step after an injection
+    args:
+      to:      { type: string, domain_allowlist: [acme.example, customers.acme.example] }
+      subject: { type: string, max_length: 120 }
+      body:    { type: string, max_length: 4000 }
+
+  close_account:
+    risk: critical
+    description: Permanently close a customer account.
+    allow_roles: [support_agent]
+    require_approval: true
+    on_taint: deny
+    args:
+      customer_id: { type: string, pattern: '^CUST-[0-9]{4}$' }

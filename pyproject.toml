@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-tool-gateway"
+version = "0.1.0"
+description = "Enforce what an AI agent's tools may do in code, not in the prompt. Default-deny, principal-bound, taint-aware."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Jermaine Ragsdale" }]
+keywords = ["llm", "ai-agents", "security", "excessive-agency", "owasp", "ai-security", "authorization"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Topic :: Security",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+]
+dependencies = ["PyYAML>=6.0", "rich>=13.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.urls]
+Homepage = "https://github.com/jmragsdale/agent-tool-gateway"
+Author = "https://jmragsdale.com"
+
+[project.scripts]
+toolgate = "toolgate.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
