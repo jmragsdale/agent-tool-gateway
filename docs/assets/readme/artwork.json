@@ -1,0 +1,76 @@
+{
+  "title": "Agent Tool Gateway",
+  "mobileTitle": [
+    "Agent Tool",
+    "Gateway"
+  ],
+  "eyebrow": "AGENT SECURITY",
+  "tagline": "Tool authority, written in code.",
+  "mobileTagline": [
+    "Tool authority,",
+    "written in code."
+  ],
+  "description": [
+    "A policy boundary between an AI agent and its tools.",
+    "Principal checks, argument rules and audit records."
+  ],
+  "mobileDescription": [
+    "A policy boundary for agent tools.",
+    "Principal checks, rules and audit records."
+  ],
+  "footerLeft": "PYTHON",
+  "footerMiddle": "POLICY ENFORCEMENT",
+  "footerRight": "PRINCIPAL / POLICY / AUDIT",
+  "diagram": [
+    "CALLER",
+    "POLICY",
+    "TOOLS"
+  ],
+  "summary": "A Python policy enforcement point for agent tool calls, with caller-bound permissions, argument checks, taint handling and audit records.",
+  "cards": [
+    {
+      "slug": "demo",
+      "category": "GET STARTED",
+      "title": "Run the demonstration",
+      "lines": [
+        "Compare gated and ungated behavior",
+        "in the bundled demonstration."
+      ],
+      "footer": "CLI / DEMONSTRATION",
+      "href": "#gateway-demo"
+    },
+    {
+      "slug": "policy",
+      "category": "POLICY DEFINITION",
+      "title": "Inspect the policy",
+      "lines": [
+        "Role grants, argument constraints",
+        "and approval settings in YAML."
+      ],
+      "footer": "YAML / PRINCIPAL-BOUND ACCESS",
+      "href": "policies/support-agent.yaml"
+    },
+    {
+      "slug": "tests",
+      "category": "REGRESSION EVIDENCE",
+      "title": "Review policy tests",
+      "lines": [
+        "Inspect rule behavior and paired",
+        "allowed and denied trace examples."
+      ],
+      "footer": "PYTHON / REGRESSION TESTS",
+      "href": "tests/test_gateway.py"
+    },
+    {
+      "slug": "limits",
+      "category": "VALIDATION SCOPE",
+      "title": "Read the limitations",
+      "lines": [
+        "Session taint, process-local limits",
+        "and integration tradeoffs."
+      ],
+      "footer": "SCOPE / KNOWN LIMITS",
+      "href": "#scope-and-honest-limits"
+    }
+  ]
+}

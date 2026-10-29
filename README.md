@@ -1,10 +1,65 @@
-# agent-tool-gateway
+<a id="agent-tool-gateway"></a>
+<a href="#gateway-demo">
+<picture>
+  <source media="(max-width: 600px)" srcset="docs/assets/readme/header-mobile.png">
+  <img src="docs/assets/readme/header.png" width="1440" alt="Agent Tool Gateway. A Python policy enforcement point for agent tool calls, with caller-bound permissions, argument checks, taint handling and audit records.">
+</picture>
+</a>
+
+<p>
+  <a href="#gateway-demo"><strong>Start here ↗</strong></a> &nbsp; / &nbsp;
+  <a href="src/toolgate/gateway.py">Source</a> &nbsp; / &nbsp;
+  <a href="#project-guide">Project guide</a> &nbsp; / &nbsp;
+  <a href="https://github.com/jmragsdale">Profile</a>
+</p>
+
+A Python policy enforcement point for agent tool calls, with caller-bound permissions, argument checks, taint handling and audit records.
+
+## Explore the project
+
+Open a card for the implementation, examples or supporting documentation.
+
+<p>
+<a href="#gateway-demo">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/demo-dark.png">
+  <img src="docs/assets/readme/demo-light.png" width="360" alt="Run the demonstration. Compare gated and ungated behavior in the bundled demonstration.">
+</picture>
+</a>
+<a href="policies/support-agent.yaml">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/policy-dark.png">
+  <img src="docs/assets/readme/policy-light.png" width="360" alt="Inspect the policy. Role grants, argument constraints and approval settings in YAML.">
+</picture>
+</a>
+<a href="tests/test_gateway.py">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/tests-dark.png">
+  <img src="docs/assets/readme/tests-light.png" width="360" alt="Review policy tests. Inspect rule behavior and paired allowed and denied trace examples.">
+</picture>
+</a>
+<a href="#scope-and-honest-limits">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/limits-dark.png">
+  <img src="docs/assets/readme/limits-light.png" width="360" alt="Read the limitations. Session taint, process-local limits and integration tradeoffs.">
+</picture>
+</a>
+</p>
+
+## Project guide
 
 Put a policy enforcement point between an AI agent and its tools, so what the agent is *allowed* to do is decided in code — default-deny, bound to the real caller, aware of untrusted content — instead of in a system prompt the model may or may not obey.
 
+<details>
+<summary>Architecture diagram</summary>
+
 ![Architecture](agent-tool-gateway.svg)
 
+</details>
+
 [prompt-injection-probe](https://github.com/jmragsdale/prompt-injection-probe) finds out whether your guardrails hold. Its LLM06 remediation reads, over and over, *enforce this in the tool layer*. This is the tool layer.
+
+<a id="gateway-demo"></a>
 
 ```bash
 pip install -e .
@@ -191,3 +246,10 @@ Built by Jermaine Ragsdale — cloud security architect, CISSP, AWS Security Spe
 I do LLM application security reviews and cloud security assessments: **[jmragsdale.com](https://jmragsdale.com)**
 
 MIT licensed.
+
+<details>
+<summary>README visual assets</summary>
+
+[Artwork sources and regeneration notes](docs/assets/readme/README.md).
+
+</details>
