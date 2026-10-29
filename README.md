@@ -1,4 +1,5 @@
 <a id="agent-tool-gateway"></a>
+
 <a href="#gateway-demo">
 <picture>
   <source media="(max-width: 600px)" srcset="docs/assets/readme/header-mobile.png">
