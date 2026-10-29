@@ -1,0 +1,4 @@
+
+# README artwork and its build helper are documentation.
+/docs/assets/readme/** linguist-documentation
+/tools/build-readme-art.cjs linguist-documentation
